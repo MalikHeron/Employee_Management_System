@@ -17,15 +17,15 @@ public class Driver {
     //Check if files exist, if not they are created
     private static void InitializeFiles() {
         try {
-            File EmployeeFile = new File("files/Employees.txt");
+            File employeeFile = new File("files/Employees.txt");
 
-            if (EmployeeFile.exists()) {
-                System.out.println(EmployeeFile + " Exists.");
+            if (employeeFile.exists()) {
+                System.out.println(employeeFile + " Exists.");
             } else {
-                if (EmployeeFile.createNewFile()) {
-                    System.out.println(EmployeeFile + " Created.");
+                if (employeeFile.createNewFile()) {
+                    System.out.println(employeeFile + " Created.");
                 } else {
-                    System.err.println(EmployeeFile + " Creation Failed.");
+                    System.err.println(employeeFile + " Creation Failed.");
                 }
             }
         } catch (Exception e) {

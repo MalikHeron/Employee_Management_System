@@ -2,24 +2,23 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Department {
 
-    private JPanel panel = new JPanel();
-    private int departmentID;
-    private String departmentName;
-    private static int numberOfEmployees;
-    private final Employee employee;
-    private final String[] DEPARTMENTS = {
+    public static final String[] DEPARTMENTS = {
             "Accounting",
             "Human Resources",
             "Administration",
             "Marketing"
     };
+    private int numberOfEmployees;
+    private final JPanel panel = new JPanel();
+    private final Employee employee;
+    private int departmentID;
+    private String departmentName;
 
     public Department() {
         //Initialize variables
@@ -28,51 +27,57 @@ public class Department {
         numberOfEmployees = 0;
         employee = new Employee();
 
+        //Background image
+        JLabel background = new JLabel();
+        ImageIcon icon = new ImageIcon("images/background.jpeg");
+        background.setIcon(icon);
+        background.setBounds(0, 0, 600, 600);
+
         //Properties for Panel
         panel.setLayout(null);
         panel.setSize(600, 600);
-        panel.setBackground(Color.WHITE);
         panel.setVisible(true);
 
         //Properties for Menu Label
         JLabel MenuLabel = new JLabel("Main Menu");
         MenuLabel.setFont(new Font("times new roman", Font.BOLD, 30));
-        MenuLabel.setBounds(250, 20, 190, 40);
+        MenuLabel.setBounds(230, 20, 190, 40);
 
         //Properties for Department Button
         JButton viewDepartmentsButton = new JButton("View All Departments");
-        viewDepartmentsButton.setBounds(200, 90, 250, 80);
+        viewDepartmentsButton.setBounds(180, 90, 250, 80);
         viewDepartmentsButton.setFocusPainted(false);
         viewDepartmentsButton.setFocusable(false);
         viewDepartmentsButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
         //Properties for Employee Button
         JButton viewEmployeesButton = new JButton("View All Employees");
-        viewEmployeesButton.setBounds(200, 175, 250, 80);
+        viewEmployeesButton.setBounds(180, 175, 250, 80);
         viewEmployeesButton.setFocusPainted(false);
         viewEmployeesButton.setFocusable(false);
         viewEmployeesButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
         //Properties for Employee Button
         JButton addEmployeeButton = new JButton("Add Employee");
-        addEmployeeButton.setBounds(200, 260, 250, 80);
+        addEmployeeButton.setBounds(180, 260, 250, 80);
         addEmployeeButton.setFocusPainted(false);
         addEmployeeButton.setFocusable(false);
         addEmployeeButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
         //Properties for Customer Button
-        JButton ExitButton = new JButton("Exit");
-        ExitButton.setBounds(200, 345, 250, 80);
-        ExitButton.setFocusPainted(false);
-        ExitButton.setFocusable(false);
-        ExitButton.setFont(new Font("times new roman", Font.PLAIN, 24));
+        JButton exitButton = new JButton("Exit");
+        exitButton.setBounds(180, 345, 250, 80);
+        exitButton.setFocusPainted(false);
+        exitButton.setFocusable(false);
+        exitButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
         //Add components to Panel
         panel.add(MenuLabel);
         panel.add(viewDepartmentsButton);
         panel.add(viewEmployeesButton);
         panel.add(addEmployeeButton);
-        panel.add(ExitButton);
+        panel.add(exitButton);
+        panel.add(background);
 
         //Action when viewDepartmentsButton is Pressed
         viewDepartmentsButton.addActionListener((ActionEvent e) -> {
@@ -83,7 +88,7 @@ public class Department {
         //Action when viewEmployeesButton is Pressed
         viewEmployeesButton.addActionListener((ActionEvent e) -> {
             System.out.println("View Employees Button Pressed");
-            //viewEmployees();
+            viewEmployees();
         });
 
         //Action when addEmployeesButton is Pressed
@@ -92,8 +97,8 @@ public class Department {
             addEmployee();
         });
 
-        //Action when ExitButton is Pressed
-        ExitButton.addActionListener((ActionEvent e) -> {
+        //Action when exitButton is Pressed
+        exitButton.addActionListener((ActionEvent e) -> {
             System.out.println("Exit Button Pressed");
 
             int selection = JOptionPane.showConfirmDialog(panel, "Do you want to continue?",
@@ -111,31 +116,38 @@ public class Department {
     }
 
     //Initialization of Getters
-    public static int getNumberOfEmployees() {
-        // Open file
-        File EmployeeFile = new File("files/Employees.txt");
-
-        int records = 0;
+    public int getNumberOfEmployees(String departmentName) {
         int count = 0;
+        String department;
 
-        /* Read file line by line (One employee takes up 3 lines in a file
-        so whenever count = 3 then record increases by 1
-         */
-        try (BufferedReader reader = new BufferedReader(new FileReader(EmployeeFile))) {
-            while (reader.readLine() != null) {
-                count++;
-                if (count == 3) {
-                    records++; //Count records in file
-                    count = 0;
+        try {
+            //Open Files
+            Scanner read = new Scanner(new File("files/Employees.txt"));
+
+            //while there is more text in file
+            while (read.hasNext()) {
+                read.next();
+                read.next();
+                read.next();
+                read.next();
+                read.nextLine();
+                read.next();
+                read.next();
+
+                //remove space in front of string
+                department = read.nextLine().substring(1);
+
+                if (department.equals(departmentName)) {
+                    count++;
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error Reading " + EmployeeFile);
             e.printStackTrace();
         }
 
         // Set Number of Customers to value of Records
-        numberOfEmployees = records;
+        numberOfEmployees = count;
+        System.out.println("Number of employees for " + departmentName + ": " + count);
 
         return numberOfEmployees;
     }
@@ -175,7 +187,7 @@ public class Department {
             while (count < DEPARTMENTS.length) {
                 //Insert data into rows
                 model.insertRow(count, new Object[]{getDepartmentID(DEPARTMENTS[count]),
-                        getDepartmentName(), getNumberOfEmployees()});
+                        getDepartmentName(), getNumberOfEmployees(DEPARTMENTS[count])});
                 count++;
             }
 
@@ -194,7 +206,6 @@ public class Department {
             Frame.setSize(600, 400);
             Frame.setMinimumSize(new Dimension(600, 400));
             Frame.setTitle("All Departments");
-            //Frame.setIconImage(Icon.getImage());
             Frame.pack();
 
             //Add table to window
@@ -208,6 +219,12 @@ public class Department {
     public void addEmployee() {
         //Remove previous display
         panel.removeAll();
+
+        // Background image
+        JLabel background = new JLabel();
+        ImageIcon icon = new ImageIcon("images/background.jpeg");
+        background.setIcon(icon);
+        background.setBounds(0, 0, 600, 600);
 
         //Properties for Menu Label
         JLabel menuLabel = new JLabel("Add Employee");
@@ -250,7 +267,7 @@ public class Department {
         phoneNumberLabel.setBounds(10, 370, 250, 30);
 
         //Properties for Department Label
-        JLabel departmentLabel = new JLabel("Departments");
+        JLabel departmentLabel = new JLabel("Department");
         departmentLabel.setFont(new Font("times new roman", Font.BOLD, 18));
         departmentLabel.setBounds(10, 420, 250, 30);
 
@@ -287,14 +304,16 @@ public class Department {
         JRadioButton maleRadioButton = new JRadioButton("Male");
         maleRadioButton.setBounds(150, 220, 90, 30);
         maleRadioButton.setFocusPainted(false);
+        maleRadioButton.setBackground(Color.WHITE);
 
         JRadioButton femaleRadioButton = new JRadioButton("Female");
         femaleRadioButton.setBounds(280, 220, 90, 30);
         femaleRadioButton.setFocusPainted(false);
+        femaleRadioButton.setBackground(Color.WHITE);
 
-        ButtonGroup genderButton = new ButtonGroup();
-        genderButton.add(maleRadioButton);
-        genderButton.add(femaleRadioButton);
+        AtomicReference<ButtonGroup> genderButton = new AtomicReference<>(new ButtonGroup());
+        genderButton.get().add(maleRadioButton);
+        genderButton.get().add(femaleRadioButton);
 
         //Properties for Age Field
         JTextField ageField = new JTextField();
@@ -318,7 +337,7 @@ public class Department {
 
         //Properties for Process Button
         JButton processButton = new JButton("Process");
-        processButton.setBounds(200, 420, 200, 50);
+        processButton.setBounds(200, 470, 200, 50);
         processButton.setFocusPainted(false);
         processButton.setFocusable(false);
         processButton.setFont(new Font("times new roman", Font.PLAIN, 20));
@@ -344,6 +363,7 @@ public class Department {
         panel.add(departmentComboBox);
         panel.add(backButton);
         panel.add(processButton);
+        panel.add(background);
 
         //Show Panel
         panel.validate();
@@ -368,82 +388,103 @@ public class Department {
             String idNumber = idField.getText();
             String firstName = firstNameField.getText();
             String lastName = lastNameField.getText();
-            String gender = genderButton.getSelection().toString();
+            String gender = getSelectedGender(maleRadioButton, femaleRadioButton);
             String age = ageField.getText();
             String emailAddress = emailAddressField.getText();
             String phoneNumber = phoneNumberField.getText();
-            String department = departmentComboBox.getSelectedItem().toString();
+            String department = String.valueOf(departmentComboBox.getSelectedItem());
 
             System.out.println("Process Button Pressed");
 
-            if (check.verifyFieldLengths(idNumber, lastName, emailAddress, phoneNumber)) {
-                int Valid = check.verifyFields(idNumber, firstName, lastName, gender, age, phoneNumber, department);
+            if (check.verifyFieldLengths(idNumber, firstName, lastName, gender, age, emailAddress, phoneNumber)) {
+                int valid = check.verifyFields(idNumber, firstName, lastName, Integer.parseInt(age), emailAddress, phoneNumber);
 
-                if (Valid == 0) {
+                if (valid == 0) {
                     System.err.println("Invalid Length for idNumber");
                     JOptionPane.showMessageDialog(panel, "Invalid Length for idNumber",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == -1) {
+                } else if (valid == -1) {
                     System.err.println("idNumber is not numerical");
                     JOptionPane.showMessageDialog(panel, "idNumber is not numerical",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == 1) {
+                } else if (valid == 1) {
                     System.err.println("Invalid number of digits for Phone Number");
                     JOptionPane.showMessageDialog(panel, "Invalid number of digits for Phone Number",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == -2) {
+                } else if (valid == -2) {
                     System.err.println("Phone Number is not numerical");
                     JOptionPane.showMessageDialog(panel, "Phone Number is not numerical",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == -3) {
+                } else if (valid == -3) {
+                    System.err.println("First Name is not only Letters");
+                    JOptionPane.showMessageDialog(panel, "Last Name is not only Letters",
+                            "Error", JOptionPane.WARNING_MESSAGE);
+                } else if (valid == -4) {
                     System.err.println("Last Name is not only Letters");
                     JOptionPane.showMessageDialog(panel, "Last Name is not only Letters",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == 3) {
+                } else if (valid == 4) {
                     System.err.println("Invalid Area Code");
                     JOptionPane.showMessageDialog(panel, "Invalid Area Code",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == 4) {
-                    System.err.println("Invalid Prefix for Phone Number");
-                    JOptionPane.showMessageDialog(panel, "Invalid Prefix for Phone Number",
-                            "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == -4) {
+                } else if (valid == -5) {
                     System.err.println("Phone Number already exists");
                     JOptionPane.showMessageDialog(panel, "Phone Number already exists",
                             "Error", JOptionPane.WARNING_MESSAGE);
-                } else if (Valid == 5) {
+                } else if (valid == -6) {
+                    System.err.println("Invalid email address");
+                    JOptionPane.showMessageDialog(panel, "Invalid email address",
+                            "Error", JOptionPane.WARNING_MESSAGE);
+                } else if (valid == -7) {
+                    System.err.println("Invalid age, too young");
+                    JOptionPane.showMessageDialog(panel, "Invalid age, too young",
+                            "Error", JOptionPane.WARNING_MESSAGE);
+                } else if (valid == -8) {
+                    System.err.println("Id number already exists");
+                    JOptionPane.showMessageDialog(panel, "Id number already exists",
+                            "Error", JOptionPane.WARNING_MESSAGE);
+                } else if (valid == 5) {
                     //Set values
                     employee.setIdNumber(idNumber);
+                    employee.setFirstName(firstName);
                     employee.setLastName(lastName);
+                    employee.setGender(gender);
+                    employee.setAge(Integer.parseInt(age));
                     employee.setEmailAddress(emailAddress);
                     employee.setTelephoneNumber(phoneNumber);
-                    //employee.setDepartment(department);
-                    //etCreditBalance();
+                    employee.setDepartment(department);
 
                     try {
                         System.out.println("Writing to File...");
 
                         //Open file in append mode
-                        FileWriter writer = new FileWriter("files/Digicel_Customers.txt", true);
+                        FileWriter writer = new FileWriter("files/Employees.txt", true);
                         writer.write(employee.getIdNumber() + " ");
-                        writer.write(employee.getLastName() + "\n");
-                        writer.write(employee.getEmailAddress() + "\n");
+                        writer.write(employee.getFirstName() + " ");
+                        writer.write(employee.getLastName() + " ");
+                        writer.write(employee.getGender() + " ");
+                        writer.write(employee.getAge() + "\n");
+                        writer.write(employee.getEmailAddress() + " ");
                         writer.write(employee.getTelephoneNumber() + " ");
                         writer.write(employee.getDepartment() + "\n");
                         writer.close();
 
-                        System.out.println("Customer Information Saved");
-                        JOptionPane.showMessageDialog(panel, "Customer Added", "Information",
+                        System.out.println("Employee Information Saved");
+                        JOptionPane.showMessageDialog(panel, "Employee Added", "Information",
                                 JOptionPane.INFORMATION_MESSAGE);
 
                         //Reset Fields
                         idField.setText("");
+                        firstNameField.setText("");
                         lastNameField.setText("");
+                        genderButton.set(new ButtonGroup());
+                        ageField.setText("");
                         emailAddressField.setText("");
                         phoneNumberField.setText("");
+                        departmentComboBox.setSelectedItem(DEPARTMENTS[0]);
                     } catch (Exception ex) {
-                        System.err.println("Could not Save Customer Information");
-                        JOptionPane.showMessageDialog(panel, "Could not Save Customer Information",
+                        System.err.println("Could not save Employee Information");
+                        JOptionPane.showMessageDialog(panel, "Could not save Employee Information",
                                 "Error", JOptionPane.WARNING_MESSAGE);
                         ex.printStackTrace();
                     }
@@ -454,6 +495,64 @@ public class Department {
                         "Error", JOptionPane.WARNING_MESSAGE);
             }
         });
+    }
+
+    //View all Employees
+    public void viewEmployees() {
+        System.out.println("View Employees Button Pressed");
+
+        try {
+            //Column Names for Table
+            String[] tableHead = {"ID Number", "First Name", "Last Name", "Gender",
+                    "Age", "Email Address", "Telephone Number", "Department"};
+
+            //Properties for table
+            DefaultTableModel model = new DefaultTableModel(tableHead, 0);
+
+            //Used for counting rows
+            int count = 0;
+
+            Scanner read = new Scanner(new File("files/Employees.txt"));
+
+            while (read.hasNext()) {
+                //Insert data into rows
+                model.insertRow(count, new Object[]{read.next(), read.next(), read.next(), read.next(),
+                        read.nextLine(), read.next(), read.next(), read.nextLine()});
+                count++;
+            }
+
+            //Create new Table
+            JTable Table = new JTable(model);
+            Table.setDefaultEditor(Object.class, null);//Set to not editable
+            Table.setAutoCreateRowSorter(true);//Enable sorting by columns
+            Table.setVisible(true);
+            Table.setOpaque(false);
+
+            //Create new window
+            JFrame Frame = new JFrame();
+            Frame.setLayout(new GridLayout());
+            Frame.setLocationRelativeTo(panel);
+            Frame.setVisible(true);
+            Frame.setSize(1920, 1080);
+            Frame.setMinimumSize(new Dimension(1280, 720));
+            Frame.setTitle("All Employees");
+            Frame.pack();
+
+            //Add table to window
+            Frame.add(new JScrollPane(Table));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Get selected gender
+    private String getSelectedGender(JRadioButton male, JRadioButton female) {
+        if (male.isSelected()) {
+            return male.getText();
+        } else if (female.isSelected()) {
+            return female.getText();
+        }
+        return "";
     }
 
     //Return JPanel

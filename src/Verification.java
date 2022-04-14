@@ -1,160 +1,228 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class Verification {
 
-    //Verify Field Lengths when adding a customer
-    public boolean verifyFieldLengths(String TRN, String LastName, String Address, String TelephoneNumber) {
-        boolean Valid = false;
-        int Length = TRN.length();
-        int Length2 = LastName.length();
-        int Length3 = Address.length();
-        int Length4 = TelephoneNumber.length();
+    //Verify email address
+    public static boolean verifyEmail(String email) {
+        String emailRegex = "^[a-zA-Z\\d_+&*-]+(?:\\.[a-zA-Z\\d+&*-]+)*@(?:[a-zA-Z\\d-]+\\.)+[a-zA-Z]{2,7}$";
 
-        if (Length > 0 && Length2 > 0 && Length3 > 0 && Length4 > 0) {
-            Valid = true;
+        Pattern pattern = Pattern.compile(emailRegex);
+
+        if (email == null) {
+            return false;
+        } else {
+            return pattern.matcher(email).matches();
+        }
+    }
+
+    //Verify Field Lengths when adding a customer
+    public boolean verifyFieldLengths(String idNumber, String firstName, String lastName,
+                                      String gender, String age, String emailAddress, String telephoneNumber) {
+        boolean valid = false;
+        int length = idNumber.length();
+        int length2 = firstName.length();
+        int length3 = lastName.length();
+        int length5 = emailAddress.length();
+        int length6 = telephoneNumber.length();
+        int length7 = age.length();
+
+        if (length > 0 && length2 > 0 && length3 > 0 && !gender.equals("") &&
+                length5 > 0 && length6 > 0 && length7 > 0) {
+            valid = true;
         }
 
-        return Valid;
+        return valid;
     }
 
     //Verify idNumber, Last Name and Phone Number when adding a Customer
     public int verifyFields(String idNumber, String firstName, String lastName,
-                            String gender, String age, String telephone, String departmentName) {
-        int Valid = 0;
-        int Index = 0;
-        String AreaCode = telephone.substring(0, 3);
+                            int age, String emailAddress, String telephone) {
+        int valid = 0;
+        String areaCode = telephone.substring(0, 3);
 
-        if (idNumber.length() == 9) {
-            Valid = 1;
+        if (idNumber.length() >= 1) {
+            valid = 1;
 
             //Check if idNumber is only digits
             for (int i = 0; i < idNumber.length(); i++) {
                 boolean Flag = Character.isDigit(idNumber.charAt(i));
 
                 if (!Flag) {
-                    Valid = -1;
+                    valid = -1;
                 }
             }
 
-            if (telephone.length() == 10 && Valid == 1) {
-                Valid = 2;
+            if (telephone.length() == 10 && valid == 1) {
+                valid = 2;
 
                 //Check if Telephone Number is only digits
                 for (int i = 0; i < telephone.length(); i++) {
                     boolean Flag = Character.isDigit(telephone.charAt(i));
 
                     if (!Flag) {
-                        Valid = -2;
+                        valid = -2;
                     }
                 }
 
-                if (Valid == 2) {
-                    Valid = 3;
+                if (valid == 2) {
+                    valid = 3;
 
-                    //Check if Last Name is only Letters
-                    for (int i = 0; i < lastName.length(); i++) {
-                        boolean Flag = Character.isLetter(lastName.charAt(i));
+                    //Check if First Name is only Letters
+                    for (int i = 0; i < firstName.length(); i++) {
+                        boolean Flag = Character.isLetter(firstName.charAt(i));
 
                         if (!Flag) {
-                            Valid = -3;
+                            valid = -3;
                         }
                     }
 
-                    if (AreaCode.equals("876") && Valid == 3) {
-                        Valid = 4;
+                    if (valid == 3) {
+                        valid = 4;
 
-                        int Prefix = Integer.parseInt(telephone.substring(3, 6));
+                        //Check if Last Name is only Letters
+                        for (int i = 0; i < lastName.length(); i++) {
+                            boolean Flag = Character.isLetter(lastName.charAt(i));
 
-                        System.out.println("Prefix: " + Prefix);
+                            if (!Flag) {
+                                valid = -4;
+                            }
+                        }
 
-                        while (Index < 4) {
-                            System.out.println("Index: " + Index);
-/*
-                            if (CompanyPrefix[Index] == Prefix && CompanyID.equals("Digicel")) {
-                                System.out.println("Valid Digicel Number");
+                        //Check if area code is for jamaica
+                        if (areaCode.equals("876") && valid == 4) {
+                            int prefix = Integer.parseInt(telephone.substring(3, 6));
 
-                                int Exists = verifyPhoneNumber(Telephone, Prefix);
+                            System.out.println("Prefix: " + prefix);
 
-                                if (Exists == 0) {
-                                    Valid = 5;
+                            //check if phone number exists
+                            int exists = checkPhoneNumber(telephone);
+
+                            if (exists == 0) {
+                                //verify email
+                                boolean validEmail = verifyEmail(emailAddress);
+
+                                if (validEmail) {
+                                    //check if employee is an adult
+                                    if (age >= 18) {
+                                        exists = checkIdNumber(idNumber);
+
+                                        if(exists == 1) {
+                                            valid = -8;
+                                        } else {
+                                            valid = 5;
+                                        }
+                                    } else {
+                                        valid = -7;
+                                    }
                                 } else {
-                                    Valid = -4;
+                                    valid = -6;
                                 }
-
-                                break;
-                            } else if (CompanyPrefix[Index] == Prefix && CompanyID.equals("Flow")) {
-                                System.out.println("Valid Flow Number");
-
-                                int Exists = verifyPhoneNumber(Telephone, Prefix);
-
-                                if (Exists == 0) {
-                                    Valid = 5;
-                                } else {
-                                    Valid = -4;
-                                }
-
-                                break;
-                            }*/
-
-                            Index++;
+                            } else {
+                                valid = -5;
+                            }
                         }
                     }
                 }
             }
         }
 
-        return Valid;
+        return valid;
     }
 
-    //Verify Customer TelephoneNumber when trying to Add Credit
-    /*public int verifyPhoneNumber(String TelephoneNumber) {
-        int Exists = 0;
+    //Check if Employee TelephoneNumber already exists
+    public int checkPhoneNumber(String telephoneNumber) {
+        int exists = 0;
 
+        String idNumber;
+        String firstName;
+        String lastName;
+        String gender;
+        String age;
+        String emailAddress;
+        String telephone;
+        String department;
+
+        //Open Files
+        Scanner read;
         try {
-            int Index = 0;
-            String idNumber;
-            String firstName;
-            String lastName;
-            String emailAddress;
-            int age;
-            String telephone;
-
-            while (Index < 4) {
-                System.out.println("Index: " + Index);
-
-                    //Open Files
-                    Scanner Read = new Scanner(new File("files/Employees.txt"));
-
-                    while (Read.hasNext()) {
-                        idNumber = Read.next();
-                        firstName = Read.nextLine();
-                        Address = Read.nextLine();
-                        Telephone = Read.next();
-                        CreditBal = Read.nextDouble();
-
-                        System.out.println(TRN + LName);
-                        System.out.println(Address);
-                        System.out.println(Telephone + " " + CreditBal);
-
-                        if (Telephone.equals(TelephoneNumber)) {
-                            System.out.println("Phone Number Exists for Digicel.");
-                            Exists = 1;
-                            break;
-                        }
-                    }
-
-                    //Close file
-                    Read.close();
-                }
-
-                Index++;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            read = new Scanner(new File("files/Employees.txt"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
 
-        return Exists;
-    }*/
+        while (read.hasNext()) {
+            idNumber = read.next();
+            firstName = read.next();
+            lastName = read.next();
+            gender = read.next();
+            age = read.nextLine();
+            emailAddress = read.next();
+            telephone = read.next();
+            department = read.nextLine();
 
+            System.out.println(idNumber + " " + firstName + " " + lastName + " "+ gender + age);
+            System.out.println(emailAddress + " " + telephone + department);
+
+            if (telephone.equals(telephoneNumber)) {
+                System.out.println("Phone Number already exists.");
+                exists = 1;
+                break;
+            }
+        }
+
+        //Close file
+        read.close();
+
+        return exists;
+    }
+
+    //Check if Employee TelephoneNumber already exists
+    public int checkIdNumber(String IDNumber) {
+        int exists = 0;
+
+        String idNumber;
+        String firstName;
+        String lastName;
+        String gender;
+        String age;
+        String emailAddress;
+        String telephone;
+        String department;
+
+        //Open Files
+        Scanner read;
+        try {
+            read = new Scanner(new File("files/Employees.txt"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        while (read.hasNext()) {
+            idNumber = read.next();
+            firstName = read.next();
+            lastName = read.next();
+            gender = read.next();
+            age = read.nextLine();
+            emailAddress = read.next();
+            telephone = read.next();
+            department = read.nextLine();
+
+            System.out.println(idNumber + " " + firstName + " " + lastName + " "+ gender + age);
+            System.out.println(emailAddress + " " + telephone + department);
+
+            if (idNumber.equals(IDNumber)) {
+                System.out.println("ID Number already exists.");
+                exists = 1;
+                break;
+            }
+        }
+
+        //Close file
+        read.close();
+
+        return exists;
+    }
 }
