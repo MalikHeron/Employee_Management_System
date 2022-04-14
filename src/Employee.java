@@ -71,7 +71,7 @@ public class Employee {
         this.telephoneNumber = telephoneNumber;
     }
 
-    public double getAge() {
+    public int getAge() {
         return age;
     }
 

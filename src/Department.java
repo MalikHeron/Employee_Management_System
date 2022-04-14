@@ -2,7 +2,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -14,9 +15,9 @@ public class Department {
             "Administration",
             "Marketing"
     };
-    private int numberOfEmployees;
     private final JPanel panel = new JPanel();
     private final Employee employee;
+    private int numberOfEmployees;
     private int departmentID;
     private String departmentName;
 
@@ -64,9 +65,16 @@ public class Department {
         addEmployeeButton.setFocusable(false);
         addEmployeeButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
+        //Properties for Employee Button
+        JButton removeEmployeeButton = new JButton("Remove Employee");
+        removeEmployeeButton.setBounds(180, 345, 250, 80);
+        removeEmployeeButton.setFocusPainted(false);
+        removeEmployeeButton.setFocusable(false);
+        removeEmployeeButton.setFont(new Font("times new roman", Font.PLAIN, 24));
+
         //Properties for Customer Button
         JButton exitButton = new JButton("Exit");
-        exitButton.setBounds(180, 345, 250, 80);
+        exitButton.setBounds(180, 430, 250, 80);
         exitButton.setFocusPainted(false);
         exitButton.setFocusable(false);
         exitButton.setFont(new Font("times new roman", Font.PLAIN, 24));
@@ -76,6 +84,7 @@ public class Department {
         panel.add(viewDepartmentsButton);
         panel.add(viewEmployeesButton);
         panel.add(addEmployeeButton);
+        panel.add(removeEmployeeButton);
         panel.add(exitButton);
         panel.add(background);
 
@@ -95,6 +104,12 @@ public class Department {
         addEmployeeButton.addActionListener((ActionEvent e) -> {
             System.out.println("Add Employee Button Pressed");
             addEmployee();
+        });
+
+        //Action when addEmployeesButton is Pressed
+        removeEmployeeButton.addActionListener((ActionEvent e) -> {
+            System.out.println("Remove Employee Button Pressed");
+            removeEmployee();
         });
 
         //Action when exitButton is Pressed
@@ -517,9 +532,12 @@ public class Department {
             while (read.hasNext()) {
                 //Insert data into rows
                 model.insertRow(count, new Object[]{read.next(), read.next(), read.next(), read.next(),
-                        read.nextLine(), read.next(), read.next(), read.nextLine()});
+                        read.next(), read.next(), read.next(), read.nextLine()});
                 count++;
             }
+
+            //Close file
+            read.close();
 
             //Create new Table
             JTable Table = new JTable(model);
@@ -543,6 +561,157 @@ public class Department {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Remove a employee
+    public void removeEmployee() {
+        //Remove previous display
+        panel.removeAll();
+
+        // Background image
+        JLabel background = new JLabel();
+        ImageIcon icon = new ImageIcon("images/background.jpeg");
+        background.setIcon(icon);
+        background.setBounds(0, 0, 600, 600);
+
+        //Properties for Menu Label
+        JLabel menuLabel = new JLabel("Remove Employee");
+        menuLabel.setFont(new Font("times new roman", Font.BOLD, 30));
+        menuLabel.setBounds(210, 20, 250, 40);
+
+        //Properties for ID Number Label
+        JLabel idLabel = new JLabel("ID Number");
+        idLabel.setFont(new Font("times new roman", Font.BOLD, 18));
+        idLabel.setBounds(10, 70, 250, 30);
+
+
+        //Properties for Back Button
+        JButton backButton = new JButton("<");
+        backButton.setBounds(10, 20, 50, 30);
+        backButton.setFocusPainted(false);
+        backButton.setFocusable(false);
+        backButton.setFont(new Font("times new roman", Font.PLAIN, 24));
+
+        //Properties for ID Field
+        JTextField idField = new JTextField() {
+            //Overrides addNotify
+            public void addNotify() {
+                super.addNotify();
+                requestFocus();//Focus on this when displayed
+            }
+        };
+
+        idField.setBounds(150, 70, 310, 40);
+        idField.setFont(new Font("times new roman", Font.PLAIN, 18));
+
+        //Properties for Process Button
+        JButton processButton = new JButton("Process");
+        processButton.setBounds(200, 470, 200, 50);
+        processButton.setFocusPainted(false);
+        processButton.setFocusable(false);
+        processButton.setFont(new Font("times new roman", Font.PLAIN, 20));
+
+        //Add components to Panel
+        panel.add(menuLabel);
+        panel.add(idLabel);
+        panel.add(idField);
+        panel.add(backButton);
+        panel.add(processButton);
+        panel.add(background);
+
+        //Show Panel
+        panel.validate();
+        panel.repaint();
+
+        //Action when backButton is Pressed
+        backButton.addActionListener((ActionEvent e) -> {
+            //Remove previous display
+            panel.removeAll();
+            panel.add(new MainScreen().panel);//Recreate Main menu
+            panel.validate();
+            panel.repaint();
+
+            System.out.println("Back Button Pressed");
+        });
+
+        //Action when processButton is Pressed
+        processButton.addActionListener((ActionEvent e) -> {
+
+            //Get values from TextFields
+            String idNumber = idField.getText();
+            boolean remove = false;
+
+            System.out.println("Process Button Pressed");
+
+            try {
+                //Open Files
+                File employeeFile = new File("files/Employees.txt");
+                File employeeFileTemp = new File("files/EmployeesTemp.txt");
+
+                Scanner read = new Scanner(employeeFile);
+
+                while (read.hasNext()) {
+                    employee.setIdNumber(read.next());
+                    employee.setFirstName(read.next());
+                    employee.setLastName(read.next());
+                    employee.setGender(read.next());
+                    employee.setAge(Integer.parseInt(read.next()));
+                    employee.setEmailAddress(read.next());
+                    employee.setTelephoneNumber(read.next());
+                    employee.setDepartment(read.nextLine().substring(1));
+
+                    if (!employee.getIdNumber().equals(idNumber)) {
+                        System.out.println("Writing to File...");
+
+                        //Open file in append mode
+                        FileWriter writer = new FileWriter(employeeFileTemp, true);
+                        writer.write(employee.getIdNumber() + " ");
+                        writer.write(employee.getFirstName() + " ");
+                        writer.write(employee.getLastName() + " ");
+                        writer.write(employee.getGender() + " ");
+                        writer.write(employee.getAge() + "\n");
+                        writer.write(employee.getEmailAddress() + " ");
+                        writer.write(employee.getTelephoneNumber() + " ");
+                        writer.write(employee.getDepartment() + "\n");
+                        writer.close();
+                    } else {
+                        remove = true;
+                    }
+                }
+
+                //Close file
+                read.close();
+
+                //Delete old file
+                if(remove) {
+                    if (employeeFile.delete()) {
+                        if (employeeFileTemp.renameTo(new File("files/Employees.txt"))) {
+                            System.out.println("Employee Removed");
+                            JOptionPane.showMessageDialog(panel, "Employee Removed", "Information",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            System.out.println("Rename failed.");
+                        }
+                    }
+                } else {
+                    System.out.println("Employee not found");
+                    JOptionPane.showMessageDialog(panel, "Employee not found", "Information",
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                    if (employeeFileTemp.delete()) {
+                        System.out.println("Delete failed.");
+                    }
+                }
+
+                //Reset Fields
+                idField.setText("");
+            } catch (Exception ex) {
+                System.err.println("Could not save Employee Information");
+                JOptionPane.showMessageDialog(panel, "Could not save Employee Information",
+                        "Error", JOptionPane.WARNING_MESSAGE);
+                ex.printStackTrace();
+            }
+        });
     }
 
     // Get selected gender

@@ -109,7 +109,7 @@ public class Verification {
                                     if (age >= 18) {
                                         exists = checkIdNumber(idNumber);
 
-                                        if(exists == 1) {
+                                        if (exists == 1) {
                                             valid = -8;
                                         } else {
                                             valid = 5;
@@ -158,17 +158,18 @@ public class Verification {
             firstName = read.next();
             lastName = read.next();
             gender = read.next();
-            age = read.nextLine();
+            age = read.next();
             emailAddress = read.next();
             telephone = read.next();
             department = read.nextLine();
 
-            System.out.println(idNumber + " " + firstName + " " + lastName + " "+ gender + age);
+            System.out.println(idNumber + " " + firstName + " " + lastName + " " + gender + age);
             System.out.println(emailAddress + " " + telephone + department);
 
             if (telephone.equals(telephoneNumber)) {
                 System.out.println("Phone Number already exists.");
                 exists = 1;
+                read.close();
                 break;
             }
         }
@@ -205,17 +206,18 @@ public class Verification {
             firstName = read.next();
             lastName = read.next();
             gender = read.next();
-            age = read.nextLine();
+            age = read.next();
             emailAddress = read.next();
             telephone = read.next();
             department = read.nextLine();
 
-            System.out.println(idNumber + " " + firstName + " " + lastName + " "+ gender + age);
+            System.out.println(idNumber + " " + firstName + " " + lastName + " " + gender + age);
             System.out.println(emailAddress + " " + telephone + department);
 
             if (idNumber.equals(IDNumber)) {
                 System.out.println("ID Number already exists.");
                 exists = 1;
+                read.close();
                 break;
             }
         }

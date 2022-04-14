@@ -1,6 +1,2 @@
-1 Malik Heron Male 20.0
-malik.heron2001@gmail.com 8762913599 Accounting
-2 Nashay Chung Male 20.0
-nashaychung@gmail.com 8762913577 Administration
-3 Jordon Chung Male 18.0
-jordonchung@gmail.com 8762848333 Human Resources
+1 Malik Heron Male 18
+malik.heron2001@gmail.com 8762913599 Human Resources
