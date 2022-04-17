@@ -13,7 +13,15 @@ public class Department {
             "Accounting",
             "Human Resources",
             "Administration",
-            "Marketing"
+            "Marketing",
+            "Sales",
+            "Administration",
+            "Purchasing",
+            "Shipping",
+            "Finance",
+            "IT",
+            "Corporate Tax"
+
     };
     private final JPanel panel = new JPanel();
     private final Employee employee;
@@ -32,11 +40,11 @@ public class Department {
         JLabel background = new JLabel();
         ImageIcon icon = new ImageIcon("images/background.jpeg");
         background.setIcon(icon);
-        background.setBounds(0, 0, 600, 600);
+        background.setBounds(0, 0, 800, 800);
 
         //Properties for Panel
         panel.setLayout(null);
-        panel.setSize(600, 600);
+        panel.setSize(800, 800);
         panel.setVisible(true);
 
         //Properties for Menu Label
@@ -46,35 +54,42 @@ public class Department {
 
         //Properties for Department Button
         JButton viewDepartmentsButton = new JButton("View All Departments");
-        viewDepartmentsButton.setBounds(180, 90, 250, 80);
+        viewDepartmentsButton.setBounds(180, 90, 250, 60);
         viewDepartmentsButton.setFocusPainted(false);
         viewDepartmentsButton.setFocusable(false);
         viewDepartmentsButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
-        //Properties for Employee Button
+        //Properties for View Department Avg Button
+        JButton viewDepartmentsAverageButton = new JButton("Dept. Average Age");
+        viewDepartmentsAverageButton.setBounds(180, 155, 250, 60);
+        viewDepartmentsAverageButton.setFocusPainted(false);
+        viewDepartmentsAverageButton.setFocusable(false);
+        viewDepartmentsAverageButton.setFont(new Font("times new roman", Font.PLAIN, 24));
+
+        //Properties for View All Employee Button
         JButton viewEmployeesButton = new JButton("View All Employees");
-        viewEmployeesButton.setBounds(180, 175, 250, 80);
+        viewEmployeesButton.setBounds(180, 220, 250, 60);
         viewEmployeesButton.setFocusPainted(false);
         viewEmployeesButton.setFocusable(false);
         viewEmployeesButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
-        //Properties for Employee Button
+        //Properties for Add Employee Button
         JButton addEmployeeButton = new JButton("Add Employee");
-        addEmployeeButton.setBounds(180, 260, 250, 80);
+        addEmployeeButton.setBounds(180, 285, 250, 60);
         addEmployeeButton.setFocusPainted(false);
         addEmployeeButton.setFocusable(false);
         addEmployeeButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
-        //Properties for Employee Button
+        //Properties for Remove Employee Button
         JButton removeEmployeeButton = new JButton("Remove Employee");
-        removeEmployeeButton.setBounds(180, 345, 250, 80);
+        removeEmployeeButton.setBounds(180, 350, 250, 60);
         removeEmployeeButton.setFocusPainted(false);
         removeEmployeeButton.setFocusable(false);
         removeEmployeeButton.setFont(new Font("times new roman", Font.PLAIN, 24));
 
         //Properties for Customer Button
         JButton exitButton = new JButton("Exit");
-        exitButton.setBounds(180, 430, 250, 80);
+        exitButton.setBounds(180, 415, 250, 60);
         exitButton.setFocusPainted(false);
         exitButton.setFocusable(false);
         exitButton.setFont(new Font("times new roman", Font.PLAIN, 24));
@@ -82,6 +97,7 @@ public class Department {
         //Add components to Panel
         panel.add(MenuLabel);
         panel.add(viewDepartmentsButton);
+        panel.add(viewDepartmentsAverageButton);
         panel.add(viewEmployeesButton);
         panel.add(addEmployeeButton);
         panel.add(removeEmployeeButton);
@@ -92,6 +108,12 @@ public class Department {
         viewDepartmentsButton.addActionListener((ActionEvent e) -> {
             System.out.println("Admin Button Pressed");
             viewDepartments();
+        });
+
+        //Action when viewDepartmentsAvgButton is Pressed
+        viewDepartmentsAverageButton.addActionListener((ActionEvent e) -> {
+            System.out.println("Admin Button Pressed");
+            viewAverages();
         });
 
         //Action when viewEmployeesButton is Pressed
@@ -106,7 +128,7 @@ public class Department {
             addEmployee();
         });
 
-        //Action when addEmployeesButton is Pressed
+        //Action when removeEmployeesButton is Pressed
         removeEmployeeButton.addActionListener((ActionEvent e) -> {
             System.out.println("Remove Employee Button Pressed");
             removeEmployee();
@@ -131,6 +153,43 @@ public class Department {
     }
 
     //Initialization of Getters
+    public int getDepartmentAvg(String departmentName) {
+        int sum = 0;
+        int age;
+        int average = 0;
+        String department;
+
+        try {
+            //Open Files
+            Scanner read = new Scanner(new File("files/Employees.txt"));
+
+            //while there is more text in file
+            while (read.hasNext()) {
+                read.next();
+                read.next();
+                read.next();
+                read.next();
+                age = read.nextInt();
+                read.next();
+                read.next();
+
+                //remove space in front of string
+                department = read.nextLine().substring(1);
+
+                if (department.equals(departmentName)) {
+                    sum += age;
+                }
+            }
+
+            average = sum / getNumberOfEmployees(departmentName);
+        } catch (ArithmeticException e) {
+            System.err.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return average;
+    }
+
     public int getNumberOfEmployees(String departmentName) {
         int count = 0;
         String department;
@@ -220,6 +279,51 @@ public class Department {
             Frame.setVisible(true);
             Frame.setSize(600, 400);
             Frame.setMinimumSize(new Dimension(600, 400));
+            Frame.setTitle("All Departments");
+            Frame.pack();
+
+            //Add table to window
+            Frame.add(new JScrollPane(Table));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //View all Averages
+    public void viewAverages() {
+        System.out.println("View Averages Button Pressed");
+
+        try {
+            //Column Names for Table
+            String[] tableHead = {"Department ID", "Department Name", "Average Employee Age"};
+
+            //Properties for table
+            DefaultTableModel model = new DefaultTableModel(tableHead, 0);
+
+            //Used for counting rows
+            int count = 0;
+
+            while (count < DEPARTMENTS.length) {
+                //Insert data into rows
+                model.insertRow(count, new Object[]{getDepartmentID(DEPARTMENTS[count]),
+                        getDepartmentName(), getDepartmentAvg(DEPARTMENTS[count])});
+                count++;
+            }
+
+            //Create new Table
+            JTable Table = new JTable(model);
+            Table.setDefaultEditor(Object.class, null);//Set to not editable
+            Table.setAutoCreateRowSorter(true);//Enable sorting by columns
+            Table.setVisible(true);
+            Table.setOpaque(false);
+
+            //Create new window
+            JFrame Frame = new JFrame();
+            Frame.setLayout(new GridLayout());
+            Frame.setLocationRelativeTo(panel);
+            Frame.setVisible(true);
+            Frame.setSize(700, 400);
+            Frame.setMinimumSize(new Dimension(700, 400));
             Frame.setTitle("All Departments");
             Frame.pack();
 
@@ -683,7 +787,7 @@ public class Department {
                 read.close();
 
                 //Delete old file
-                if(remove) {
+                if (remove) {
                     if (employeeFile.delete()) {
                         if (employeeFileTemp.renameTo(new File("files/Employees.txt"))) {
                             System.out.println("Employee Removed");
